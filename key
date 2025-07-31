@@ -1,10 +1,12 @@
 -- ========================================
--- KEY SYSTEM - Für Website Keys
+-- KEY SYSTEM - Mit deinen Edge Functions
 -- ========================================
 
 do
-    local API_BASE = "https://iesugielppyhhvtdzsqq.supabase.co/functions/v1"
-    local WEBSITE_URL = "https://orbit-script-forge.lovable.app/"
+    -- Deine Supabase Edge Functions
+    local SUPABASE_URL = "https://iesugielppyhhvtdzsqq.supabase.co"
+    local ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imllc3VnaWVscHB5aGh2dGR6c3FxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4ODAyMDUsImV4cCI6MjA2MTQ1NjIwNX0.QQYxM6pz6h9IGWYGxysvW8p1KFmHk3O_RdqnpwJYE8w"
+    
     local Players = game:GetService("Players")
     local HttpService = game:GetService("HttpService")
     local TweenService = game:GetService("TweenService")
@@ -13,14 +15,24 @@ do
     
     -- Key System bereits ausgeführt? Skip!
     if _G.KeySystemPassed then
+        print("🔑 Key System bereits bestanden!")
         return
     end
     
+    print("🚀 Key System startet...")
+    print("📡 Supabase:", SUPABASE_URL)
+    
     -- HTTP Check
-    if not pcall(function() HttpService:GetAsync("https://httpbin.org/get") end) then
+    local httpWorks = pcall(function() 
+        return HttpService:GetAsync("https://httpbin.org/get") 
+    end)
+    
+    if not httpWorks then
         warn("❌ HTTP Requests blockiert!")
         return
     end
+    
+    print("✅ HTTP funktioniert")
     
     local function createKeyGUI()
         local gui = Instance.new("ScreenGui")
@@ -29,338 +41,264 @@ do
         gui.DisplayOrder = 999999
         
         -- Executor compatibility
-        if syn and syn.protect_gui then syn.protect_gui(gui) end
-        gui.Parent = gethui and gethui() or playerGui
-        
-        -- Blur Background
-        local blur = Instance.new("BlurEffect")
-        blur.Size = 20
-        if game.Workspace.CurrentCamera then
-            blur.Parent = game.Workspace.CurrentCamera
+        if syn and syn.protect_gui then 
+            syn.protect_gui(gui)
+            print("🛡️ GUI Protection aktiviert (Synapse)")
         end
+        
+        gui.Parent = gethui and gethui() or playerGui
+        print("📺 GUI erstellt")
         
         -- Main Frame
         local frame = Instance.new("Frame")
-        frame.Size = UDim2.new(0, 450, 0, 320)
-        frame.Position = UDim2.new(0.5, -225, 0.5, -160)
-        frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+        frame.Size = UDim2.new(0, 400, 0, 300)
+        frame.Position = UDim2.new(0.5, -200, 0.5, -150)
+        frame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
         frame.BorderSizePixel = 0
         frame.Parent = gui
         
         local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 15)
+        corner.CornerRadius = UDim.new(0, 12)
         corner.Parent = frame
-        
-        -- Header
-        local header = Instance.new("Frame")
-        header.Size = UDim2.new(1, 0, 0, 80)
-        header.Position = UDim2.new(0, 0, 0, 0)
-        header.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-        header.BorderSizePixel = 0
-        header.Parent = frame
-        
-        local headerCorner = Instance.new("UICorner")
-        headerCorner.CornerRadius = UDim.new(0, 15)
-        headerCorner.Parent = header
-        
-        local headerBottom = Instance.new("Frame")
-        headerBottom.Size = UDim2.new(1, 0, 0, 15)
-        headerBottom.Position = UDim2.new(0, 0, 1, -15)
-        headerBottom.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-        headerBottom.BorderSizePixel = 0
-        headerBottom.Parent = header
         
         -- Title
         local title = Instance.new("TextLabel")
-        title.Size = UDim2.new(1, -20, 0, 30)
+        title.Size = UDim2.new(1, -20, 0, 50)
         title.Position = UDim2.new(0, 10, 0, 10)
         title.BackgroundTransparency = 1
-        title.Text = "🔐 KEY SYSTEM"
+        title.Text = "🔐 ORBIT KEY SYSTEM"
         title.TextColor3 = Color3.fromRGB(255, 255, 255)
-        title.TextSize = 24
+        title.TextScaled = true
         title.Font = Enum.Font.GothamBold
-        title.TextXAlignment = Enum.TextXAlignment.Left
-        title.Parent = header
+        title.Parent = frame
         
         -- Subtitle
         local subtitle = Instance.new("TextLabel")
         subtitle.Size = UDim2.new(1, -20, 0, 20)
-        subtitle.Position = UDim2.new(0, 10, 0, 45)
+        subtitle.Position = UDim2.new(0, 10, 0, 65)
         subtitle.BackgroundTransparency = 1
-        subtitle.Text = "Erstelle einen Key auf der Website"
+        subtitle.Text = "Erstelle einen Key auf orbit-script-forge.lovable.app"
         subtitle.TextColor3 = Color3.fromRGB(180, 180, 180)
-        subtitle.TextSize = 14
+        subtitle.TextSize = 12
         subtitle.Font = Enum.Font.Gotham
-        subtitle.TextXAlignment = Enum.TextXAlignment.Left
-        subtitle.Parent = header
-        
-        -- Instructions
-        local instructions = Instance.new("TextLabel")
-        instructions.Size = UDim2.new(1, -40, 0, 40)
-        instructions.Position = UDim2.new(0, 20, 0, 90)
-        instructions.BackgroundTransparency = 1
-        instructions.Text = "1. Gehe auf die Website\n2. Erstelle einen Key\n3. Gib den Key hier ein"
-        instructions.TextColor3 = Color3.fromRGB(200, 200, 200)
-        instructions.TextSize = 13
-        instructions.Font = Enum.Font.Gotham
-        instructions.TextXAlignment = Enum.TextXAlignment.Left
-        instructions.TextYAlignment = Enum.TextYAlignment.Top
-        instructions.Parent = frame
-        
-        -- Key Input Container
-        local inputContainer = Instance.new("Frame")
-        inputContainer.Size = UDim2.new(1, -40, 0, 45)
-        inputContainer.Position = UDim2.new(0, 20, 0, 145)
-        inputContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-        inputContainer.BorderSizePixel = 0
-        inputContainer.Parent = frame
-        
-        local inputCorner = Instance.new("UICorner")
-        inputCorner.CornerRadius = UDim.new(0, 10)
-        inputCorner.Parent = inputContainer
+        subtitle.Parent = frame
         
         -- Key Input
         local input = Instance.new("TextBox")
-        input.Size = UDim2.new(1, -20, 1, -10)
-        input.Position = UDim2.new(0, 10, 0, 5)
-        input.BackgroundTransparency = 1
+        input.Size = UDim2.new(1, -40, 0, 40)
+        input.Position = UDim2.new(0, 20, 0, 100)
+        input.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+        input.BorderSizePixel = 0
         input.PlaceholderText = "Deinen Key hier eingeben..."
-        input.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
         input.Text = ""
         input.TextColor3 = Color3.fromRGB(255, 255, 255)
-        input.TextSize = 16
+        input.TextSize = 14
         input.Font = Enum.Font.Gotham
-        input.TextXAlignment = Enum.TextXAlignment.Left
-        input.Parent = inputContainer
+        input.Parent = frame
         
-        -- Button Container
-        local buttonContainer = Instance.new("Frame")
-        buttonContainer.Size = UDim2.new(1, -40, 0, 45)
-        buttonContainer.Position = UDim2.new(0, 20, 0, 210)
-        buttonContainer.BackgroundTransparency = 1
-        buttonContainer.Parent = frame
+        local inputCorner = Instance.new("UICorner")
+        inputCorner.CornerRadius = UDim.new(0, 8)
+        inputCorner.Parent = input
         
         -- Verify Button
         local verifyBtn = Instance.new("TextButton")
-        verifyBtn.Size = UDim2.new(0.48, 0, 1, 0)
-        verifyBtn.Position = UDim2.new(0, 0, 0, 0)
-        verifyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+        verifyBtn.Size = UDim2.new(0.45, 0, 0, 35)
+        verifyBtn.Position = UDim2.new(0.05, 0, 0, 160)
+        verifyBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
         verifyBtn.BorderSizePixel = 0
-        verifyBtn.Text = "✓ KEY PRÜFEN"
+        verifyBtn.Text = "✓ VERIFIZIEREN"
         verifyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        verifyBtn.TextSize = 16
+        verifyBtn.TextSize = 13
         verifyBtn.Font = Enum.Font.GothamBold
-        verifyBtn.Parent = buttonContainer
+        verifyBtn.Parent = frame
         
         local verifyCorner = Instance.new("UICorner")
-        verifyCorner.CornerRadius = UDim.new(0, 10)
+        verifyCorner.CornerRadius = UDim.new(0, 8)
         verifyCorner.Parent = verifyBtn
         
         -- Website Button
         local websiteBtn = Instance.new("TextButton")
-        websiteBtn.Size = UDim2.new(0.48, 0, 1, 0)
-        websiteBtn.Position = UDim2.new(0.52, 0, 0, 0)
-        websiteBtn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+        websiteBtn.Size = UDim2.new(0.45, 0, 0, 35)
+        websiteBtn.Position = UDim2.new(0.5, 0, 0, 160)
+        websiteBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 255)
         websiteBtn.BorderSizePixel = 0
         websiteBtn.Text = "🌐 WEBSITE"
         websiteBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        websiteBtn.TextSize = 16
+        websiteBtn.TextSize = 13
         websiteBtn.Font = Enum.Font.GothamBold
-        websiteBtn.Parent = buttonContainer
+        websiteBtn.Parent = frame
         
         local websiteCorner = Instance.new("UICorner")
-        websiteCorner.CornerRadius = UDim.new(0, 10)
+        websiteCorner.CornerRadius = UDim.new(0, 8)
         websiteCorner.Parent = websiteBtn
         
         -- Status
         local status = Instance.new("TextLabel")
-        status.Size = UDim2.new(1, -40, 0, 50)
-        status.Position = UDim2.new(0, 20, 0, 265)
+        status.Size = UDim2.new(1, -20, 0, 80)
+        status.Position = UDim2.new(0, 10, 0, 210)
         status.BackgroundTransparency = 1
-        status.Text = ""
-        status.TextColor3 = Color3.fromRGB(255, 100, 100)
-        status.TextSize = 14
+        status.Text = "Bereit für Key Eingabe..."
+        status.TextColor3 = Color3.fromRGB(200, 200, 200)
+        status.TextSize = 12
         status.Font = Enum.Font.Gotham
         status.TextWrapped = true
-        status.TextXAlignment = Enum.TextXAlignment.Center
         status.Parent = frame
         
-        return gui, frame, input, verifyBtn, websiteBtn, status, blur
+        return gui, frame, input, verifyBtn, websiteBtn, status
     end
     
     local function showStatus(statusLabel, message, isError)
         statusLabel.Text = message
         statusLabel.TextColor3 = isError and Color3.fromRGB(255, 100, 100) or Color3.fromRGB(100, 255, 100)
-        
-        task.spawn(function()
-            task.wait(5)
-            statusLabel.Text = ""
-        end)
+        print("📱 Status:", message)
     end
     
-    local function buttonAnimation(button, callback)
-        local originalSize = button.Size
-        local pressedSize = UDim2.new(originalSize.X.Scale * 0.95, originalSize.X.Offset, originalSize.Y.Scale * 0.95, originalSize.Y.Offset)
+    -- Edge Function: verify-linkvertise-hash
+    local function verifyKey(key, statusLabel, gui)
+        showStatus(statusLabel, "🔄 Verifiziere Key mit Supabase...", false)
         
-        button.MouseButton1Click:Connect(function()
-            -- Button press animation
-            local pressDown = TweenService:Create(button, TweenInfo.new(0.1), {Size = pressedSize})
-            local pressUp = TweenService:Create(button, TweenInfo.new(0.1), {Size = originalSize})
-            
-            pressDown:Play()
-            pressDown.Completed:Connect(function()
-                pressUp:Play()
-                callback()
-            end)
-        end)
-    end
-    
-    local function makeRequest(endpoint, data)
         local success, response = pcall(function()
             return HttpService:RequestAsync({
-                Url = API_BASE .. "/" .. endpoint,
+                Url = SUPABASE_URL .. "/functions/v1/verify-linkvertise-hash",
                 Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = HttpService:JSONEncode(data or {})
+                Headers = {
+                    ["Content-Type"] = "application/json",
+                    ["Authorization"] = "Bearer " .. ANON_KEY
+                },
+                Body = HttpService:JSONEncode({
+                    hash = key,
+                    userId = tostring(player.UserId),
+                    username = player.Name,
+                    robloxGame = tostring(game.GameId)
+                })
             })
         end)
         
+        print("🔍 Verify Response:", success, response and response.StatusCode)
+        
         if success and response.StatusCode == 200 then
-            return true, HttpService:JSONDecode(response.Body)
-        else
-            return false, response and response.Body or "Netzwerk Fehler"
-        end
-    end
-    
-    local function verifyKey(key, statusLabel, gui)
-        showStatus(statusLabel, "🔄 Verifiziere Key...", false)
-        
-        local success, response = makeRequest("verify-linkvertise-hash", {
-            hash = key,
-            userId = tostring(player.UserId),
-            username = player.Name
-        })
-        
-        if success and response.valid then
-            showStatus(statusLabel, "✅ Key gültig! Script wird geladen...", false)
-            _G.KeySystemPassed = true
+            local data = HttpService:JSONDecode(response.Body)
+            print("🔍 Response Data:", data)
             
-            -- Success animation
-            local successTween = TweenService:Create(gui.Frame, TweenInfo.new(0.5), {
-                BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-            })
-            successTween:Play()
-            
-            task.wait(1.5)
-            
-            -- Fade out
-            local fadeOut = TweenService:Create(gui.Frame, TweenInfo.new(0.5), {
-                Size = UDim2.new(0, 0, 0, 0),
-                Position = UDim2.new(0.5, 0, 0.5, 0),
-                BackgroundTransparency = 1
-            })
-            fadeOut:Play()
-            
-            fadeOut.Completed:Connect(function()
+            if data.valid then
+                showStatus(statusLabel, "✅ Key gültig! Script wird geladen...", false)
+                _G.KeySystemPassed = true
+                
+                task.wait(1)
                 gui:Destroy()
-            end)
-            
-            -- Success notification
-            pcall(function()
-                game:GetService("StarterGui"):SetCore("SendNotification", {
-                    Title = "🎉 Key System";
-                    Text = "Erfolgreich authentifiziert!";
-                    Duration = 3;
-                })
-            end)
-            
-            return true
-        else
-            local errorMsg = response.error or "Ungültiger Key!"
-            showStatus(statusLabel, "❌ " .. errorMsg, true)
-            
-            -- Error shake animation
-            local originalPos = gui.Frame.Position
-            local shakeDistance = 10
-            
-            for i = 1, 3 do
-                TweenService:Create(gui.Frame, TweenInfo.new(0.1), {
-                    Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset + shakeDistance, originalPos.Y.Scale, originalPos.Y.Offset)
-                }):Play()
-                task.wait(0.1)
-                TweenService:Create(gui.Frame, TweenInfo.new(0.1), {
-                    Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset - shakeDistance, originalPos.Y.Scale, originalPos.Y.Offset)
-                }):Play()
-                task.wait(0.1)
+                
+                pcall(function()
+                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                        Title = "🎉 Orbit Key System";
+                        Text = "Erfolgreich authentifiziert!";
+                        Duration = 3;
+                    })
+                end)
+                
+                return true
+            else
+                showStatus(statusLabel, "❌ " .. (data.error or "Key ungültig oder abgelaufen!"), true)
+                return false
             end
-            
-            TweenService:Create(gui.Frame, TweenInfo.new(0.1), {Position = originalPos}):Play()
-            
+        else
+            local errorMsg = "Verbindungsfehler"
+            if response then
+                errorMsg = errorMsg .. " (Code: " .. response.StatusCode .. ")"
+                if response.Body then
+                    print("🔍 Error Body:", response.Body)
+                end
+            end
+            showStatus(statusLabel, "❌ " .. errorMsg, true)
             return false
         end
     end
     
+    -- Edge Function: get-discord-oauth-url (falls du das willst)
+    local function getDiscordLink(statusLabel)
+        showStatus(statusLabel, "🔄 Erstelle Discord Link...", false)
+        
+        local success, response = pcall(function()
+            return HttpService:RequestAsync({
+                Url = SUPABASE_URL .. "/functions/v1/get-discord-oauth-url", 
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json",
+                    ["Authorization"] = "Bearer " .. ANON_KEY
+                },
+                Body = HttpService:JSONEncode({
+                    userId = tostring(player.UserId),
+                    username = player.Name
+                })
+            })
+        end)
+        
+        if success and response.StatusCode == 200 then
+            local data = HttpService:JSONDecode(response.Body)
+            if data.url then
+                showStatus(statusLabel, "✅ Discord Link erstellt! Check Output.", false)
+                print("🔗 DISCORD LINK:", data.url)
+                
+                pcall(function()
+                    game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
+                        Text = "🔗 Discord: " .. data.url;
+                        Color = Color3.fromRGB(114, 137, 218);
+                    })
+                end)
+            end
+        else
+            showStatus(statusLabel, "❌ Discord Link Fehler", true)
+        end
+    end
+    
     local function openWebsite(statusLabel)
-        showStatus(statusLabel, "🌐 Website Link wurde erstellt!", false)
+        local website = "https://orbit-script-forge.lovable.app/"
+        showStatus(statusLabel, "🌐 Website Link bereitgestellt!", false)
         
-        -- Website URL in verschiedenen Wegen bereitstellen
-        print("🌐 WEBSITE:", WEBSITE_URL)
+        print("🌐 WEBSITE:", website)
         
-        -- Chat Message
         pcall(function()
             game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
-                Text = "🌐 Key erstellen: " .. WEBSITE_URL;
+                Text = "🌐 Key erstellen: " .. website;
                 Color = Color3.fromRGB(100, 150, 255);
             })
         end)
         
-        -- Notification
-        pcall(function()
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "🌐 Key Website";
-                Text = "Link wurde in Chat/Output gesendet!";
-                Duration = 5;
-            })
-        end)
-        
-        -- Clipboard (falls unterstützt)
         if setclipboard then
-            setclipboard(WEBSITE_URL)
+            setclipboard(website)
             showStatus(statusLabel, "🌐 Website Link in Clipboard kopiert!", false)
         end
     end
     
     -- Key System starten
     local function startKeySystem()
-        local gui, frame, input, verifyBtn, websiteBtn, status, blur = createKeyGUI()
+        local gui, frame, input, verifyBtn, websiteBtn, status = createKeyGUI()
         
         -- Entrance Animation
         frame.Size = UDim2.new(0, 0, 0, 0)
         frame.Position = UDim2.new(0.5, 0, 0.5, 0)
-        frame.BackgroundTransparency = 1
         
-        local entranceAnim = TweenService:Create(frame, TweenInfo.new(0.8, Enum.EasingStyle.Back), {
-            Size = UDim2.new(0, 450, 0, 320),
-            Position = UDim2.new(0.5, -225, 0.5, -160),
-            BackgroundTransparency = 0
+        local entranceAnim = TweenService:Create(frame, TweenInfo.new(0.6, Enum.EasingStyle.Back), {
+            Size = UDim2.new(0, 400, 0, 300),
+            Position = UDim2.new(0.5, -200, 0.5, -150)
         })
         entranceAnim:Play()
         
-        -- Button Animations & Events
-        buttonAnimation(verifyBtn, function()
+        -- Events
+        verifyBtn.MouseButton1Click:Connect(function()
             local key = input.Text:gsub("%s+", "")
             if key == "" then
-                showStatus(status, "❌ Bitte gib einen Key ein!", true)
+                showStatus(status, "❌ Bitte Key eingeben!", true)
                 return
             end
             
-            if verifyKey(key, status, gui) then
-                return
-            end
+            print("🔑 Teste Key:", key)
+            verifyKey(key, status, gui)
         end)
         
-        buttonAnimation(websiteBtn, function()
+        websiteBtn.MouseButton1Click:Connect(function()
             openWebsite(status)
+            -- Optional: Discord Link auch erstellen
+            -- getDiscordLink(status)
         end)
         
         -- Enter key support
@@ -370,25 +308,30 @@ do
             end
         end)
         
-        -- Auto-focus
         input:CaptureFocus()
         
         -- Warten bis Key verifiziert ist
         repeat task.wait(0.1) until _G.KeySystemPassed or not gui.Parent
         
-        if blur then blur:Destroy() end
-        
         if not _G.KeySystemPassed then
-            return
+            print("❌ Key System abgebrochen")
+            return false
         end
+        
+        return true
     end
     
     -- Key System ausführen
-    startKeySystem()
-    
-    print("🎉 Key System erfolgreich! Script wird fortgesetzt...")
+    if startKeySystem() then
+        print("🎉 Key System erfolgreich! Script wird fortgesetzt...")
+    else
+        print("❌ Key System fehlgeschlagen!")
+        return
+    end
 end
 
 -- ========================================
--- AB HIER DEIN NORMALER SCRIPT CODE
+-- AB HIER DEIN EXECUTOR CODE  
 -- ========================================
+
+print("🚀 Dein Script läuft jetzt!")
